@@ -1,4 +1,4 @@
-name: .NET Core
+name: .NET Core Windows
 
 on:
   push:
@@ -8,10 +8,15 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: .NetFramework Action Template
-      uses: auycro/netframework-action-template@v0.0.2
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1.4.0
+      with:
+        # SDK version to use. Example: 2.2.104
+        dotnet-version: 2.1.801
+      
+    - name: dotnet publish test
+      run: cd Chip8CSharp;dotnet publish -c Release -r win10-x64
