@@ -59,8 +59,8 @@ namespace Chip8CSharp
             while (true)
             {
                 //try
-                    cpu.Step();
-                    cpu.DrawDisplay();
+                cpu.Step();
+                cpu.DrawDisplay();
                 /*catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
@@ -111,7 +111,7 @@ namespace Chip8CSharp
 
             PC += 2;
 
-            switch(nibble)
+            switch (nibble)
             {
                 case 0x0000:
                     if (opcode == 0x00e0)
@@ -171,7 +171,7 @@ namespace Chip8CSharp
                             V[vx] = (byte)((V[vx] + V[vy]) & 0x00FF);
                             break;
                         case 5:
-                            V[15] = (byte)(V[vx] > V[vy] ? 1 : 0); 
+                            V[15] = (byte)(V[vx] > V[vy] ? 1 : 0);
                             V[vx] = (byte)((V[vx] - V[vy]) & 0x00FF);
                             break;
                         case 6:
@@ -209,7 +209,7 @@ namespace Chip8CSharp
 
                     V[15] = 0;
 
-                    for(int i = 0; i < n; i++)
+                    for (int i = 0; i < n; i++)
                     {
                         byte mem = RAM[I + i];
 
