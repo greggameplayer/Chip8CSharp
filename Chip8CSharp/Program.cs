@@ -20,19 +20,23 @@ namespace Chip8CSharp
                 return;
             }
 
-            IntPtr window = SDL.SDL_CreateWindow("Chip8CSharp", 128, 128, 64 * 8, 32 * 8, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+            IntPtr window =
+                SDL.SDL_CreateWindow("Chip8CSharp", 128, 128, 64 * 8, 32 * 8,
+                                     SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
             CPU cpu = new CPU();
 
             if (args.Length == 1)
             {
-                using (BinaryReader reader = new BinaryReader(new FileStream(args[0], FileMode.Open)))
+                using (BinaryReader reader =
+                          new BinaryReader(new FileStream(args[0], FileMode.Open)))
                 {
                     List<byte> program = new List<byte>();
 
                     while (reader.BaseStream.Position < reader.BaseStream.Length)
                     {
-                        //program.Add((ushort)((reader.ReadByte() << 8) | reader.ReadByte()));
+                        // program.Add((ushort)((reader.ReadByte() << 8) |
+                        // reader.ReadByte()));
                         program.Add(reader.ReadByte());
                     }
 
@@ -46,13 +50,15 @@ namespace Chip8CSharp
                 Console.Clear();
                 try
                 {
-                    using (BinaryReader reader = new BinaryReader(new FileStream(path, FileMode.Open)))
+                    using (BinaryReader reader =
+                              new BinaryReader(new FileStream(path, FileMode.Open)))
                     {
                         List<byte> program = new List<byte>();
 
                         while (reader.BaseStream.Position < reader.BaseStream.Length)
                         {
-                            //program.Add((ushort)((reader.ReadByte() << 8) | reader.ReadByte()));
+                            // program.Add((ushort)((reader.ReadByte() << 8) |
+                            // reader.ReadByte()));
                             program.Add(reader.ReadByte());
                         }
 
@@ -70,11 +76,11 @@ namespace Chip8CSharp
 
             while (running)
             {
-                //try
+                // try
                 cpu.Step();
                 while (SDL.SDL_PollEvent(out sdlEvent) != 0)
                 {
-                    if(sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                    if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
                     {
                         running = false;
                     }
@@ -106,13 +112,16 @@ namespace Chip8CSharp
 
         private void InitializeFont()
         {
-            byte[] characters = new byte[]
-            {
-                0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0, 0x10, 0xF0, 0x80, 0xF0, 0xF0, 0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10, 0x10, 0xF0, 0x80, 0xF0, 0x10, 0xF0, 0xF0, 0x80, 0xF0, 0x90, 0xF0, 0xF0, 0x10, 0x20, 0x40, 0x40, 0xF0, 0x90, 0xF0, 0x90, 0xF0, 0xF0, 0x90, 0xF0, 0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0, 0x90, 0xE0, 0x90, 0xE0, 0xF0, 0x80, 0x80, 0x80, 0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80
-            };
+            byte[] characters = new byte[]{
+        0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0, 0x10,
+        0xF0, 0x80, 0xF0, 0xF0, 0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10,
+        0x10, 0xF0, 0x80, 0xF0, 0x10, 0xF0, 0xF0, 0x80, 0xF0, 0x90, 0xF0, 0xF0,
+        0x10, 0x20, 0x40, 0x40, 0xF0, 0x90, 0xF0, 0x90, 0xF0, 0xF0, 0x90, 0xF0,
+        0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0, 0x90, 0xE0, 0x90, 0xE0,
+        0xF0, 0x80, 0x80, 0x80, 0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80,
+        0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80};
 
             Array.Copy(characters, RAM, characters.Length);
-
         }
 
         public void LoadProgram(byte[] program)
@@ -130,12 +139,15 @@ namespace Chip8CSharp
 
         public void Step()
         {
-            if (!watch.IsRunning) watch.Start();
+            if (!watch.IsRunning)
+                watch.Start();
 
             if (watch.ElapsedMilliseconds > 16)
             {
-                if (DelayTimer > 0) DelayTimer--;
-                if (SoundTimer > 0) SoundTimer--;
+                if (DelayTimer > 0)
+                    DelayTimer--;
+                if (SoundTimer > 0)
+                    SoundTimer--;
                 watch.Restart();
             }
 
@@ -155,7 +167,8 @@ namespace Chip8CSharp
                 case 0x0000:
                     if (opcode == 0x00e0)
                     {
-                        for (int i = 0; i < Display.Length; i++) Display[0] = 0;
+                        for (int i = 0; i < Display.Length; i++)
+                            Display[0] = 0;
                     }
                     else if (opcode == 0x00ee)
                     {
@@ -163,7 +176,7 @@ namespace Chip8CSharp
                     }
                     else
                     {
-                        throw new Exception($"Unsupported opcode {opcode.ToString("X4")}");
+                        throw new Exception($"Unsupported opcode {opcode.ToString(" X4 ")}");
                     }
                     break;
                 case 0x1000:
@@ -174,13 +187,16 @@ namespace Chip8CSharp
                     PC = (ushort)(opcode & 0x0FFF);
                     break;
                 case 0x3000:
-                    if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) PC += 2;
+                    if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF))
+                        PC += 2;
                     break;
                 case 0x4000:
-                    if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) PC += 2;
+                    if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF))
+                        PC += 2;
                     break;
                 case 0x5000:
-                    if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) PC += 2;
+                    if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4])
+                        PC += 2;
                     break;
                 case 0x6000:
                     V[(opcode & 0x0F00) >> 8] = (byte)(opcode & 0x00FF);
@@ -226,11 +242,12 @@ namespace Chip8CSharp
                             V[vx] = (byte)(V[vx] << 1);
                             break;
                         default:
-                            throw new Exception($"Unsupported opcode {opcode.ToString("X4")}");
+                            throw new Exception($"Unsupported opcode {opcode.ToString(" X4 ")}");
                     }
                     break;
                 case 0x9000:
-                    if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) PC += 2;
+                    if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4])
+                        PC += 2;
                     break;
                 case 0xA000:
                     I = (ushort)(opcode & 0x0FFF);
@@ -258,9 +275,11 @@ namespace Chip8CSharp
                             byte pixel = (byte)((mem >> (7 - j)) & 0x01);
                             int index = x + j + (y + i) * 64;
 
-                            if (index > 2047) continue;
+                            if (index > 2047)
+                                continue;
 
-                            if (pixel == 1 && Display[index] == 1) V[15] = 1;
+                            if (pixel == 1 && Display[index] == 1)
+                                V[15] = 1;
 
                             if (Display[index] == 1 && pixel == 1)
                             {
@@ -278,22 +297,26 @@ namespace Chip8CSharp
                         }
                     }
 
-                    if (displayDirty) Thread.Sleep(20);
+                    if (displayDirty)
+                        Thread.Sleep(20);
 
-                    //DrawDisplay();
+                    // DrawDisplay();
                     break;
                 case 0xE000:
                     if ((opcode & 0x00FF) == 0x009E)
                     {
-                        if (((Keyboard >> V[(opcode & 0x0F00) >> 8]) & 0x01) == 0x01) PC += 2;
+                        if (((Keyboard >> V[(opcode & 0x0F00) >> 8]) & 0x01) == 0x01)
+                            PC += 2;
                         break;
                     }
                     else if ((opcode & 0x00FF) == 0x00A1)
                     {
-                        if (((Keyboard >> V[(opcode & 0x0F00) >> 8]) & 0x01) != 0x01) PC += 2;
+                        if (((Keyboard >> V[(opcode & 0x0F00) >> 8]) & 0x01) != 0x01)
+                            PC += 2;
                         break;
                     }
-                    else throw new Exception($"Unsupported opcode {opcode.ToString("X4")}");
+                    else
+                        throw new Exception($"Unsupported opcode {opcode.ToString(" X4 ")}");
                 case 0xF000:
                     int tx = (opcode & 0x0F00) >> 8;
 
@@ -336,11 +359,11 @@ namespace Chip8CSharp
                             }
                             break;
                         default:
-                            throw new Exception($"Unsupported opcode {opcode.ToString("X4")}");
+                            throw new Exception($"Unsupported opcode {opcode.ToString(" X4 ")}");
                     }
                     break;
                 default:
-                    throw new Exception($"Unsupported opcode {opcode.ToString("X4")}");
+                    throw new Exception($"Unsupported opcode {opcode.ToString(" X4 ")}");
             }
         }
 
