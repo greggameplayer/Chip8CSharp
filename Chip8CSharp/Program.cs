@@ -5,6 +5,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
+using SDL2;
 
 namespace Chip8CSharp
 {
@@ -12,6 +14,13 @@ namespace Chip8CSharp
     {
         static void Main(string[] args)
         {
+            if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
+            {
+                Console.WriteLine("SDL failed to init !");
+                return;
+            }
+
+            IntPtr window = SDL.SDL_CreateWindow("Chip8CSharp", 128, 128, 64 * 8, 32 * 8, SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
             CPU cpu = new CPU();
 
@@ -56,10 +65,20 @@ namespace Chip8CSharp
                 }
             }
 
-            while (true)
+            SDL.SDL_Event sdlEvent;
+            bool running = true;
+
+            while (running)
             {
                 //try
                 cpu.Step();
+                while (SDL.SDL_PollEvent(out sdlEvent) != 0)
+                {
+                    if(sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
+                    {
+                        running = false;
+                    }
+                }
                 /*catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
@@ -85,20 +104,41 @@ namespace Chip8CSharp
 
         public bool WaitingForKeyPress = false;
 
+        private void InitializeFont()
+        {
+            byte[] characters = new byte[]
+            {
+                0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0, 0x10, 0xF0, 0x80, 0xF0, 0xF0, 0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10, 0x10, 0xF0, 0x80, 0xF0, 0x10, 0xF0, 0xF0, 0x80, 0xF0, 0x90, 0xF0, 0xF0, 0x10, 0x20, 0x40, 0x40, 0xF0, 0x90, 0xF0, 0x90, 0xF0, 0xF0, 0x90, 0xF0, 0x10, 0xF0, 0xF0, 0x90, 0xF0, 0x90, 0x90, 0xE0, 0x90, 0xE0, 0x90, 0xE0, 0xF0, 0x80, 0x80, 0x80, 0xF0, 0xE0, 0x90, 0x90, 0x90, 0xE0, 0xF0, 0x80, 0xF0, 0x80, 0xF0, 0xF0, 0x80, 0xF0, 0x80, 0x80
+            };
+
+            Array.Copy(characters, RAM, characters.Length);
+
+        }
+
         public void LoadProgram(byte[] program)
         {
             RAM = new byte[4096];
+            InitializeFont();
             for (int i = 0; i < program.Length; i++)
             {
                 RAM[512 + i] = program[i];
-                //RAM[513 + i * 2] = (byte)(program[i] & 0x00FF);
             }
             PC = 512;
         }
 
+        private Stopwatch watch = new Stopwatch();
 
         public void Step()
         {
+            if (!watch.IsRunning) watch.Start();
+
+            if (watch.ElapsedMilliseconds > 16)
+            {
+                if (DelayTimer > 0) DelayTimer--;
+                if (SoundTimer > 0) SoundTimer--;
+                watch.Restart();
+            }
+
             var opcode = (ushort)((RAM[PC] << 8) | RAM[PC + 1]);
             if (WaitingForKeyPress)
             {
@@ -217,6 +257,9 @@ namespace Chip8CSharp
                         {
                             byte pixel = (byte)((mem >> (7 - j)) & 0x01);
                             int index = x + j + (y + i) * 64;
+
+                            if (index > 2047) continue;
+
                             if (pixel == 1 && Display[index] == 1) V[15] = 1;
 
                             if (Display[index] == 1 && pixel == 1)
