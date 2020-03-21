@@ -60,7 +60,6 @@ namespace Chip8CSharp
             {
                 //try
                 cpu.Step();
-                cpu.DrawDisplay();
                 /*catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
@@ -221,6 +220,8 @@ namespace Chip8CSharp
                             Display[index] = (byte)(Display[index] ^ pixel);
                         }
                     }
+
+                    DrawDisplay();
                     break;
                 case 0xE000:
                     if ((opcode & 0x00FF) == 0x009E)
@@ -290,19 +291,22 @@ namespace Chip8CSharp
             Console.SetCursorPosition(0, 0);
             for (int y = 0; y < 32; y++)
             {
+                string line = "";
                 for (int x = 0; x < 64; x++)
                 {
                     if (Display[x + y * 64] != 0)
                     {
-                        Console.Write("*");
+                        line += "*";
                     }
                     else
                     {
-                        Console.Write(" ");
+                        line += " ";
                     }
                 }
-                Console.WriteLine();
+                Console.WriteLine(line);
             }
+
+            Thread.Sleep(20);
         }
     }
 }
