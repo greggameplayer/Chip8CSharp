@@ -207,6 +207,7 @@ namespace Chip8CSharp
                     int n = opcode & 0x000F;
 
                     V[15] = 0;
+                    bool displayDirty = false;
 
                     for (int i = 0; i < n; i++)
                     {
@@ -217,11 +218,26 @@ namespace Chip8CSharp
                             byte pixel = (byte)((mem >> (7 - j)) & 0x01);
                             int index = x + j + (y + i) * 64;
                             if (pixel == 1 && Display[index] == 1) V[15] = 1;
+
+                            if (Display[index] == 1 && pixel == 1)
+                            {
+                                Console.SetCursorPosition(x + j, y + i);
+                                Console.Write(" ");
+                                displayDirty = true;
+                            }
+                            else if (Display[index] == 0 && pixel == 1)
+                            {
+                                Console.SetCursorPosition(x + j, y + i);
+                                Console.Write("*");
+                                displayDirty = true;
+                            }
                             Display[index] = (byte)(Display[index] ^ pixel);
                         }
                     }
 
-                    DrawDisplay();
+                    if (displayDirty) Thread.Sleep(20);
+
+                    //DrawDisplay();
                     break;
                 case 0xE000:
                     if ((opcode & 0x00FF) == 0x009E)
