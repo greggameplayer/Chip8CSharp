@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
 using SDL2;
+using System.Runtime.InteropServices;
 
 namespace Chip8CSharp
 {
@@ -19,10 +20,6 @@ namespace Chip8CSharp
                 Console.WriteLine("SDL failed to init !");
                 return;
             }
-
-            IntPtr window =
-                SDL.SDL_CreateWindow("Chip8CSharp", 128, 128, 64 * 8, 32 * 8,
-                                     SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
 
             CPU cpu = new CPU();
 
@@ -71,12 +68,31 @@ namespace Chip8CSharp
                 }
             }
 
+            IntPtr window =
+                SDL.SDL_CreateWindow("Chip8CSharp", 128, 128, 64 * 8, 32 * 8,
+                                     SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+
+            if (window == IntPtr.Zero)
+            {
+                Console.WriteLine("SDL could not create a valid window");
+                return;
+            }
+
+            IntPtr renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+
+            if (renderer == IntPtr.Zero)
+            {
+                Console.WriteLine("SDL could not create a valid renderer");
+                return;
+            }
+
             SDL.SDL_Event sdlEvent;
             bool running = true;
 
+            IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
+
             while (running)
             {
-                // try
                 cpu.Step();
                 while (SDL.SDL_PollEvent(out sdlEvent) != 0)
                 {
@@ -84,12 +100,47 @@ namespace Chip8CSharp
                     {
                         running = false;
                     }
+                    else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
+                    {
+                        var key = KeyCodeToKeyIndex((int)sdlEvent.key.keysym.sym);
+                        cpu.Keyboard |= (ushort)key;
+                    }
+                    else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYUP)
+                    {
+                        var key = KeyCodeToKeyIndex((int)sdlEvent.key.keysym.sym);
+                        cpu.Keyboard &= (ushort)~key;
+                    }
                 }
-                /*catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }*/
+
+                var displayHandle = GCHandle.Alloc(cpu.Display, GCHandleType.Pinned);
+
+                if (sdlTexture != IntPtr.Zero)
+                    SDL.SDL_DestroyTexture(sdlTexture);
+
+                sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+                sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
+
+                displayHandle.Free();
+
+                SDL.SDL_RenderClear(renderer);
+                SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
+                SDL.SDL_RenderPresent(renderer);
+                Thread.Sleep(1);
             }
+
+            SDL.SDL_DestroyRenderer(renderer);
+            SDL.SDL_DestroyWindow(window);
+        }
+
+        private static int KeyCodeToKeyIndex(int keycode)
+        {
+            int keyIndex = 0;
+            if (keycode < 58)
+                keyIndex = keycode - 48;
+            else
+                keyIndex = keycode - 87;
+
+            return (1 << keyIndex);
         }
     }
 
@@ -102,9 +153,9 @@ namespace Chip8CSharp
         public Stack<ushort> Stack = new Stack<ushort>();
         public byte DelayTimer;
         public byte SoundTimer;
-        public byte Keyboard;
+        public ushort Keyboard;
 
-        public byte[] Display = new byte[64 * 32];
+        public uint[] Display = new uint[64 * 32];
 
         private Random generator = new Random(Environment.TickCount);
 
@@ -154,7 +205,8 @@ namespace Chip8CSharp
             var opcode = (ushort)((RAM[PC] << 8) | RAM[PC + 1]);
             if (WaitingForKeyPress)
             {
-                V[(opcode & 0x0F00) >> 8] = Keyboard;
+                //V[(opcode & 0x0F00) >> 8] = Keyboard;
+                throw new Exception("not supported yet !");
                 return;
             }
 
@@ -278,10 +330,10 @@ namespace Chip8CSharp
                             if (index > 2047)
                                 continue;
 
-                            if (pixel == 1 && Display[index] == 1)
+                            if (pixel == 1 && Display[index] != 0)
                                 V[15] = 1;
 
-                            if (Display[index] == 1 && pixel == 1)
+                           /* if (Display[index] != 0 && pixel == 1)
                             {
                                 Console.SetCursorPosition(x + j, y + i);
                                 Console.Write(" ");
@@ -292,13 +344,13 @@ namespace Chip8CSharp
                                 Console.SetCursorPosition(x + j, y + i);
                                 Console.Write("*");
                                 displayDirty = true;
-                            }
-                            Display[index] = (byte)(Display[index] ^ pixel);
+                            }*/
+                            Display[index] = (Display[index] != 0 && pixel == 0) || (Display[index] == 0 && pixel == 1) ? 0xffffffff : 0;//(byte)(Display[index] ^ pixel);
                         }
                     }
 
-                    if (displayDirty)
-                        Thread.Sleep(20);
+                    /*if (displayDirty)
+                        Thread.Sleep(20);*/
 
                     // DrawDisplay();
                     break;
@@ -339,7 +391,7 @@ namespace Chip8CSharp
                             I += V[tx];
                             break;
                         case 0x29:
-                            I = (ushort)(V[tx] & 5);
+                            I = (ushort)(V[tx] * 5);
                             break;
                         case 0x33:
                             RAM[I] = (byte)(V[tx] / 100);
