@@ -78,7 +78,8 @@ namespace Chip8CSharp
                 return;
             }
 
-            IntPtr renderer = SDL.SDL_CreateRenderer(window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
+            IntPtr renderer = SDL.SDL_CreateRenderer(
+                window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
 
             if (renderer == IntPtr.Zero)
             {
@@ -117,7 +118,9 @@ namespace Chip8CSharp
                 if (sdlTexture != IntPtr.Zero)
                     SDL.SDL_DestroyTexture(sdlTexture);
 
-                sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+                sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(
+                    displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4, 0x000000ff,
+                    0x0000ff00, 0x00ff0000, 0xff000000);
                 sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
 
                 displayHandle.Free();
@@ -205,7 +208,7 @@ namespace Chip8CSharp
             var opcode = (ushort)((RAM[PC] << 8) | RAM[PC + 1]);
             if (WaitingForKeyPress)
             {
-                //V[(opcode & 0x0F00) >> 8] = Keyboard;
+                // V[(opcode & 0x0F00) >> 8] = Keyboard;
                 throw new Exception("not supported yet !");
                 return;
             }
@@ -333,19 +336,22 @@ namespace Chip8CSharp
                             if (pixel == 1 && Display[index] != 0)
                                 V[15] = 1;
 
-                           /* if (Display[index] != 0 && pixel == 1)
-                            {
-                                Console.SetCursorPosition(x + j, y + i);
-                                Console.Write(" ");
-                                displayDirty = true;
-                            }
-                            else if (Display[index] == 0 && pixel == 1)
-                            {
-                                Console.SetCursorPosition(x + j, y + i);
-                                Console.Write("*");
-                                displayDirty = true;
-                            }*/
-                            Display[index] = (Display[index] != 0 && pixel == 0) || (Display[index] == 0 && pixel == 1) ? 0xffffffff : 0;//(byte)(Display[index] ^ pixel);
+                            /* if (Display[index] != 0 && pixel == 1)
+                             {
+                                 Console.SetCursorPosition(x + j, y + i);
+                                 Console.Write(" ");
+                                 displayDirty = true;
+                             }
+                             else if (Display[index] == 0 && pixel == 1)
+                             {
+                                 Console.SetCursorPosition(x + j, y + i);
+                                 Console.Write("*");
+                                 displayDirty = true;
+                             }*/
+                            Display[index] = (Display[index] != 0 && pixel == 0) ||
+                                                     (Display[index] == 0 && pixel == 1)
+                                                 ? 0xffffffff
+                                                 : 0; //(byte)(Display[index] ^ pixel);
                         }
                     }
 
