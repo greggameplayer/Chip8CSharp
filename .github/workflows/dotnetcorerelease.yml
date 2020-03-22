@@ -1,0 +1,40 @@
+name: .NET Core Release
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v1.4.0
+      with:
+        # SDK version to use. Example: 2.2.104
+        dotnet-version: 2.1.801
+      
+    - name: dotnet publish test
+      run: cd Chip8CSharp;dotnet publish -c Release -r win10-x64
+    
+    - name: Install Zip dependencies
+      run: sudo apt update;sudo apt install zip unzip
+    
+    - name: Zip Release
+      run: zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/win10-x64/publish/
+      
+    - name: Install Dotnet version tool
+      run: dotnet tool install -g dotnet-version-cli
+      
+    - name: Set environmental variable for version
+      run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
+      
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v1-release
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip
+        asset_name: Windows-10-Release-v${{ env.PROJECT_VERSION }}
+        tag: v${{ env.PROJECT_VERSION }}
