@@ -38,3 +38,4 @@ jobs:
         file: /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip
         asset_name: Windows-10-Release-v${{ env.PROJECT_VERSION }}
         tag: v${{ env.PROJECT_VERSION }}
+        overwrite: true
