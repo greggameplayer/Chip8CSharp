@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [win-x64, linux-x64, osx-x64]
 
     steps:
     - uses: actions/checkout@v2
@@ -17,13 +20,13 @@ jobs:
         dotnet-version: 2.1.801
       
     - name: dotnet publish test
-      run: cd Chip8CSharp;dotnet publish -c Release -r win10-x64
+      run: cd Chip8CSharp;dotnet publish -c Release -r ${{ matrix.os }}
     
     - name: Install Zip dependencies
       run: sudo apt update;sudo apt install zip unzip
     
     - name: Zip Release
-      run: zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/win10-x64/publish/
+      run: zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/${{ matrix.os }}/publish/
       
     - name: Install Dotnet version tool
       run: dotnet tool install -g dotnet-version-cli
@@ -36,6 +39,6 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip
-        asset_name: Windows-10-Release-v${{ env.PROJECT_VERSION }}
+        asset_name: ${{ matrix.os }}-v${{ env.PROJECT_VERSION }}
         tag: v${{ env.PROJECT_VERSION }}
         overwrite: true
