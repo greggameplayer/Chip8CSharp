@@ -7,6 +7,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [win-x64, linux-x64, osx-x64]
 
     steps:
     - uses: actions/checkout@v2
@@ -17,4 +20,4 @@ jobs:
         dotnet-version: 2.1.801
       
     - name: dotnet publish test
-      run: cd Chip8CSharp;dotnet publish -c Release -r win10-x64
+      run: cd Chip8CSharp;dotnet publish -c Release -r ${{ matrix.os }}
