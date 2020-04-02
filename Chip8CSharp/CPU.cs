@@ -74,7 +74,7 @@ public class CPU {
     case 0x0000:
       if (opcode == 0x00e0) {
         for (int i = 0; i < Display.Length; i++)
-          Display[0] = 0;
+          Display[i] = 0;
       } else if (opcode == 0x00ee) {
         PC = Stack.Pop();
       } else {

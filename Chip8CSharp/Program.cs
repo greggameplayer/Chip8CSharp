@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -88,13 +88,13 @@ class Program {
 
           for (int i = 0; i < waveData.Length && cpu.SoundTimer > 0;
                i++, beepSamples++) {
-            if (beepSamples == 734) {
+            if (beepSamples == 730) {
               beepSamples = 0;
               cpu.SoundTimer--;
             }
 
             waveData[i] =
-                (sbyte)(127 * Math.Sin(sample * Math.PI * 2 * 1000 / 44100));
+                (sbyte)(127 * Math.Sin(sample * Math.PI * 2 * 604.1 / 44100));
             sample++;
           }
 
@@ -108,39 +108,36 @@ class Program {
 
     IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
     Stopwatch frameTimer = Stopwatch.StartNew();
-
+    int ticksPer60hz = (int)(Stopwatch.Frequency * 0.016);
     while (running) {
       try {
         if (!cpu.WaitingForKeyPress)
           cpu.Step();
-        while (SDL.SDL_PollEvent(out sdlEvent) != 0) {
-          if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT) {
-            running = false;
-          } else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN) {
-            var key = KeyCodeToKeyIndex((int) sdlEvent.key.keysym.sym);
-            cpu.Keyboard |= (ushort)(1 << key);
+        if (frameTimer.ElapsedTicks > ticksPer60hz)
+          {
+            while (SDL.SDL_PollEvent(out sdlEvent) != 0) {
+              if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT) {
+                 running = false;
+              } else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN) {
+                 var key = KeyCodeToKeyIndex((int) sdlEvent.key.keysym.sym);
+                 cpu.Keyboard |= (ushort)(1 << key);
 
-            if (cpu.WaitingForKeyPress)
-              cpu.KeyPressed((byte) key);
-          } else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYUP) {
-            var key = KeyCodeToKeyIndex((int) sdlEvent.key.keysym.sym);
-            cpu.Keyboard &= (ushort) ~(1 << key);
-          }
-        }
-
-        if (frameTimer.ElapsedMilliseconds > 16) {
+                 if (cpu.WaitingForKeyPress)
+                 cpu.KeyPressed((byte) key);
+              } else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYUP) {
+                 var key = KeyCodeToKeyIndex((int) sdlEvent.key.keysym.sym);
+                 cpu.Keyboard &= (ushort) ~(1 << key);
+              }
+            }
           var displayHandle = GCHandle.Alloc(cpu.Display, GCHandleType.Pinned);
-
           if (sdlTexture != IntPtr.Zero)
             SDL.SDL_DestroyTexture(sdlTexture);
-
-          sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(
+            sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(
               displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4,
               0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
           sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
 
           displayHandle.Free();
-
           SDL.SDL_RenderClear(renderer);
           SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
           SDL.SDL_RenderPresent(renderer);
