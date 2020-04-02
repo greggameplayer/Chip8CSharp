@@ -52,8 +52,16 @@ class Program {
     }
 
     IntPtr window =
-        SDL.SDL_CreateWindow("Chip8CSharp", 128, 128, 64 * 8, 32 * 8,
+        SDL.SDL_CreateWindow("Chip8CSharp", 0, 30, 64 * 8, 32 * 8,
                              SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+      SDL.SDL_DisplayMode DM;
+      if (SDL.SDL_GetCurrentDisplayMode(0, out DM) != 0)
+      {
+        Console.WriteLine("SDL_GetCurrentDisplayMode failed" + SDL.SDL_GetError());
+        return;
+      }
+      SDL.SDL_GetCurrentDisplayMode(0, out DM);
+      SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
 
     if (window == IntPtr.Zero) {
       Console.WriteLine("SDL could not create a valid window");
