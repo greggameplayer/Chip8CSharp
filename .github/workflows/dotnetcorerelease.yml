@@ -34,6 +34,9 @@ jobs:
     - name: Set environmental variable for version
       run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
       
+    - name: Change the latest commit message
+      run: git commit --amend -m "V${{ env.PROJECT_VERSION }} Builds"
+      
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
       with:
