@@ -4,12 +4,13 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PublishSingleFile>true</PublishSingleFile>
-    <AssemblyVersion>1.0.3.0</AssemblyVersion>
-    <Version>1.0.3.0</Version>
+    <AssemblyVersion>1.0.4.0</AssemblyVersion>
+    <Version>1.0.4.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="GtkSharp" Version="3.22.25.74" />
+    <PackageReference Include="Sentry" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
