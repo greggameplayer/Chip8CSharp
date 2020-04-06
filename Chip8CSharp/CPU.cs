@@ -6,6 +6,11 @@ namespace Chip8CSharp
 {
     public class CPU
     {
+        Video videoCPU { get; set; }
+        public CPU(Video video)
+        {
+            videoCPU = video;
+        }
         public byte[] RAM = new byte[4096];
         public byte[] V = new byte[16];
         public ushort PC = 0;
@@ -14,8 +19,6 @@ namespace Chip8CSharp
         public byte DelayTimer;
         public byte SoundTimer;
         public ushort Keyboard;
-
-        public uint[] Display = new uint[64 * 32];
 
         private Random generator = new Random(Environment.TickCount);
 
@@ -84,8 +87,7 @@ namespace Chip8CSharp
                 case 0x0000:
                     if (opcode == 0x00e0)
                     {
-                        for (int i = 0; i < Display.Length; i++)
-                            Display[i] = 0;
+                        videoCPU.clearVBuffer();
                     }
                     else if (opcode == 0x00ee)
                     {
@@ -194,15 +196,17 @@ namespace Chip8CSharp
                             if (index > 2047)
                                 continue;
 
-                            if (pixel == 1 && Display[index] != 0)
+                            if (pixel == 1 && videoCPU.videoBuffer[index] != 0)
                                 V[15] = 1;
 
-                            Display[index] = (Display[index] != 0 && pixel == 0) ||
-                                                     (Display[index] == 0 && pixel == 1)
+                            videoCPU.videoBuffer[index] = (videoCPU.videoBuffer[index] != 0 && pixel == 0) ||
+                                                     (videoCPU.videoBuffer[index] == 0 && pixel == 1)
                                                  ? 0xffffffff
                                                  : 0;
                         }
                     }
+
+                    videoCPU.optimizations(opcode);
                     break;
                 case 0xE000:
                     if ((opcode & 0x00FF) == 0x009E)
