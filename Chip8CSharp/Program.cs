@@ -21,7 +21,9 @@ namespace Chip8CSharp
                     return;
                 }
 
-                CPU cpu = new CPU();
+                Video video = new Video();
+                CPU cpu = new CPU(video);
+                video.clearVBuffer();
 
                 if (args.Length == 1)
                 {
@@ -71,6 +73,7 @@ namespace Chip8CSharp
                 IntPtr window =
                     SDL.SDL_CreateWindow("Chip8CSharp", 0, 30, 64 * 8, 32 * 8,
                                          SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+                video.init(0);
                 SDL.SDL_DisplayMode DM;
                 if (SDL.SDL_GetCurrentDisplayMode(0, out DM) != 0)
                 {
@@ -137,6 +140,7 @@ namespace Chip8CSharp
                 SDL.SDL_PauseAudio(0);
 
                 IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
+                var displayHandle = GCHandle.Alloc(video.frameBuffer, GCHandleType.Pinned);
                 Stopwatch frameTimer = Stopwatch.StartNew();
                 int ticksPer60hz = (int)(Stopwatch.Frequency * 0.016);
                 while (running)
@@ -167,7 +171,6 @@ namespace Chip8CSharp
                                     cpu.Keyboard &= (ushort)~(1 << key);
                                 }
                             }
-                            var displayHandle = GCHandle.Alloc(cpu.Display, GCHandleType.Pinned);
                             if (sdlTexture != IntPtr.Zero)
                                 SDL.SDL_DestroyTexture(sdlTexture);
                             sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(
@@ -175,7 +178,6 @@ namespace Chip8CSharp
                               0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
                             sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
 
-                            displayHandle.Free();
                             SDL.SDL_RenderClear(renderer);
                             SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
                             SDL.SDL_RenderPresent(renderer);
