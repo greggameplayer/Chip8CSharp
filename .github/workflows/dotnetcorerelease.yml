@@ -5,9 +5,8 @@ on:
     branches: [ master ]
 
 jobs:
-  bump-version-patch:
+  bump-version:
     runs-on: ubuntu-latest
-    if: contains(github.event_name, 'patch')
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core SDK
@@ -19,43 +18,24 @@ jobs:
     - name: Install Dotnet version tool
       run: dotnet tool install -g dotnet-version-cli
       
-    - name: Apply new version
+    - name: Apply Patch
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
-  bump-version-minor:
-    runs-on: ubuntu-latest
-    if: contains(github.event_name, 'minor')
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v1.4.0
-      with:
-        # SDK version to use. Example: 2.2.104
-        dotnet-version: 2.1.801
+      if: contains(github.event_name, 'patch')
+      continue-on-error: true
       
-    - name: Install Dotnet version tool
-      run: dotnet tool install -g dotnet-version-cli
-      
-    - name: Apply new version
+    - name: Apply Minor
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
-  bump-version-major:
-    runs-on: ubuntu-latest
-    if: contains(github.event_name, 'major')
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v1.4.0
-      with:
-        # SDK version to use. Example: 2.2.104
-        dotnet-version: 2.1.801
+      if: contains(github.event_name, 'minor')
+      continue-on-error: true
       
-    - name: Install Dotnet version tool
-      run: dotnet tool install -g dotnet-version-cli
-      
-    - name: Apply new version
+    - name: Apply Major
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
+      if: contains(github.event_name, 'major')
+      continue-on-error: true
+      
   build:
     runs-on: ubuntu-latest
-    needs: [bump-version-patch, bump-version-minor, bump-version-major]
+    needs: [bump-version]
     strategy:
       matrix:
         os: [win-x64, linux-x64, osx-x64]
