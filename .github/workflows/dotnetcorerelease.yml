@@ -20,18 +20,21 @@ jobs:
     
     - name: Set environmental variable for version
       run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
+    
+    - name: Test
+      run: echo "${{ github.event.pull_request.title }}"
       
     - name: Apply Patch
-      run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
       if: contains(github.event.pull_request.title, 'patch')
+      run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
       
     - name: Apply Minor
-      run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
       if: contains(github.event.pull_request.title, 'minor')
+      run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
       
     - name: Apply Major
-      run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
       if: contains(github.event.pull_request.title, 'major')
+      run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
     
     - name: git global configuration
       run: |
