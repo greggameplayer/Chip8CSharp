@@ -17,25 +17,40 @@ jobs:
       
     - name: Install Dotnet version tool
       run: dotnet tool install -g dotnet-version-cli
+    
+    - name: Set environmental variable for version
+      run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
       
     - name: Apply Patch
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
-      if: contains(github.event_name, 'patch')
+      if: contains(github.ref, 'patch')
       continue-on-error: true
       
     - name: Apply Minor
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
-      if: contains(github.event_name, 'minor')
+      if: contains(github.ref, 'minor')
       continue-on-error: true
       
     - name: Apply Major
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
-      if: contains(github.event_name, 'major')
-      continue-on-error: true
+      if: contains(github.ref, 'major')
+      continue-on-error: false
+    
+    - name: git global configuration
+      run: |
+        git config --global user.name "Dotnet autobuilder"
+        git config --global user.email autobuilder@dotnet.com
+    
+    - name: commit & push
+      run: |
+        git add /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj
+        git commit -m "Release v${{ env.PROJECT_VERSION }}"
+        git push origin master --force
       
   build:
     runs-on: ubuntu-latest
     needs: [bump-version]
+    if: contains(github.ref, 'release')
     strategy:
       matrix:
         os: [win-x64, linux-x64, osx-x64]
@@ -61,7 +76,9 @@ jobs:
       run: sudo apt update;sudo apt install zip unzip
     
     - name: Zip Release
-      run: zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/${{ matrix.os }}/publish/;mv /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/${{ matrix.os }}-v${{ env.PROJECT_VERSION }}.zip
+      run: |
+        zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/${{ matrix.os }}/publish/
+        mv /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/${{ matrix.os }}-v${{ env.PROJECT_VERSION }}.zip
     
     - name: Upload binaries to Release
       uses: softprops/action-gh-release@v1
