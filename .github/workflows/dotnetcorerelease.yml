@@ -24,17 +24,14 @@ jobs:
     - name: Apply Patch
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
       if: contains(github.event.pull_request.title, 'patch')
-      continue-on-error: true
       
     - name: Apply Minor
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
       if: contains(github.event.pull_request.title, 'minor')
-      continue-on-error: true
       
     - name: Apply Major
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
       if: contains(github.event.pull_request.title, 'major')
-      continue-on-error: false
     
     - name: git global configuration
       run: |
