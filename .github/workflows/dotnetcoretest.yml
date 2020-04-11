@@ -3,7 +3,7 @@ name: .NET Core Test
 on:
   pull_request:
     branches: [ master ]
-
+    types: [ opened, synchronize, reopened, edited ]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,3 +21,10 @@ jobs:
       
     - name: dotnet publish test
       run: cd Chip8CSharp;dotnet publish -c Release -r ${{ matrix.os }}
+  git-checks:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: wip/action@v1.0.0
+    
