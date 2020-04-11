@@ -21,7 +21,7 @@ jobs:
       
     - name: dotnet publish test
       run: cd Chip8CSharp;dotnet publish -c Release -r ${{ matrix.os }}
-  wip:
+  git-checks:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
