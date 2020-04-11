@@ -51,23 +51,22 @@ jobs:
     - name: dotnet publish test
       run: cd Chip8CSharp;dotnet publish -c Release -r ${{ matrix.os }}
     
-    - name: Install Zip dependencies
-      run: sudo apt update;sudo apt install zip unzip
-    
-    - name: Zip Release
-      run: zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/${{ matrix.os }}/publish/
-      
     - name: Install Dotnet version tool
       run: dotnet tool install -g dotnet-version-cli
       
     - name: Set environmental variable for version
       run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
-      
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v1-release
+    
+    - name: Install Zip dependencies
+      run: sudo apt update;sudo apt install zip unzip
+    
+    - name: Zip Release
+      run: zip -r /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/bin/Release/netcoreapp2.1/${{ matrix.os }}/publish/;mv /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/${{ matrix.os }}-v${{ env.PROJECT_VERSION }}.zip
+    
+    - name: Upload binaries to Release
+      uses: softprops/action-gh-release@v1
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/release.zip
-        asset_name: ${{ matrix.os }}-v${{ env.PROJECT_VERSION }}
-        tag: v${{ env.PROJECT_VERSION }}
-        overwrite: true
+        files: /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/${{ matrix.os }}-v${{ env.PROJECT_VERSION }}.zip
+        tag_name: v${{ env.PROJECT_VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
