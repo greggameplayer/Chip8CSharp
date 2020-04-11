@@ -70,77 +70,25 @@ namespace Chip8CSharp
                     }
                 }
 
-                IntPtr window =
-                    SDL.SDL_CreateWindow("Chip8CSharp", 0, 30, 64 * 8, 32 * 8,
-                                         SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
-                video.init(0);
-                SDL.SDL_DisplayMode DM;
-                if (SDL.SDL_GetCurrentDisplayMode(0, out DM) != 0)
-                {
-                    Console.WriteLine("SDL_GetCurrentDisplayMode failed" + SDL.SDL_GetError());
-                    return;
-                }
-                SDL.SDL_GetCurrentDisplayMode(0, out DM);
+                video.init(0, out IntPtr window);
+                video.getDisplayMode(out SDL.SDL_DisplayMode DM);
+
+                video.verifyWindow(window);
+
                 SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
 
-                if (window == IntPtr.Zero)
-                {
-                    Console.WriteLine("SDL could not create a valid window");
-                    return;
-                }
-
-                IntPtr renderer = SDL.SDL_CreateRenderer(
-                    window, -1, SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED);
-
-                if (renderer == IntPtr.Zero)
-                {
-                    Console.WriteLine("SDL could not create a valid renderer");
-                    return;
-                }
+                video.createRenderer(window, out IntPtr renderer);
 
                 SDL.SDL_Event sdlEvent;
                 bool running = true;
 
-                int sample = 0;
-                int beepSamples = 0;
+                Audio audioEngine = new Audio();
 
-                SDL.SDL_AudioSpec audioSpec = new SDL.SDL_AudioSpec();
-                audioSpec.channels = 1;
-                audioSpec.freq = 44100;
-                audioSpec.samples = 256;
-                audioSpec.format = SDL.AUDIO_S8;
-                audioSpec.callback =
-                    new SDL.SDL_AudioCallback((userdata, stream, length) =>
-                    {
-                        if (cpu == null)
-                            return;
+                audioEngine.init(cpu);
 
-                        sbyte[] waveData = new sbyte[length];
+                audioEngine.play();
 
-                        for (int i = 0; i < waveData.Length && cpu.SoundTimer > 0;
-                       i++, beepSamples++)
-                        {
-                            if (beepSamples == 730)
-                            {
-                                beepSamples = 0;
-                                cpu.SoundTimer--;
-                            }
-
-                            waveData[i] =
-                          (sbyte)(127 * Math.Sin(sample * Math.PI * 2 * 604.1 / 44100));
-                            sample++;
-                        }
-
-                        byte[] byteData = (byte[])(Array)waveData;
-
-                        Marshal.Copy(byteData, 0, stream, byteData.Length);
-                    });
-
-                SDL.SDL_OpenAudio(ref audioSpec, IntPtr.Zero);
-                SDL.SDL_PauseAudio(0);
-
-                IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
-                var displayHandle = GCHandle.Alloc(video.frameBuffer, GCHandleType.Pinned);
+                video.createDisplayHandle(out GCHandle displayHandle);
                 Stopwatch frameTimer = Stopwatch.StartNew();
                 int ticksPer60hz = (int)(Stopwatch.Frequency * 0.016);
                 while (running)
@@ -171,16 +119,11 @@ namespace Chip8CSharp
                                     cpu.Keyboard &= (ushort)~(1 << key);
                                 }
                             }
-                            if (sdlTexture != IntPtr.Zero)
-                                SDL.SDL_DestroyTexture(sdlTexture);
-                            sdlSurface = SDL.SDL_CreateRGBSurfaceFrom(
-                              displayHandle.AddrOfPinnedObject(), 64, 32, 32, 64 * 4,
-                              0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-                            sdlTexture = SDL.SDL_CreateTextureFromSurface(renderer, sdlSurface);
-
-                            SDL.SDL_RenderClear(renderer);
-                            SDL.SDL_RenderCopy(renderer, sdlTexture, IntPtr.Zero, IntPtr.Zero);
-                            SDL.SDL_RenderPresent(renderer);
+                            if (video.getSdlTexture() != IntPtr.Zero)
+                                video.destroyTexture();
+                            video.createRGBSurfaceFrom(displayHandle);
+                            video.createTextureFromSurface(renderer);
+                            video.render(renderer);
 
                             frameTimer.Restart();
                         }
@@ -191,8 +134,7 @@ namespace Chip8CSharp
                         Console.WriteLine(e.Message);
                     }
                 }
-                SDL.SDL_DestroyRenderer(renderer);
-                SDL.SDL_DestroyWindow(window);
+                video.destroyAll(window, renderer);
             }
         }
 
