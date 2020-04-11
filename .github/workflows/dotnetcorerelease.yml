@@ -44,7 +44,7 @@ jobs:
         git config --global user.name "Dotnet autobuilder"
         git config --global user.email autobuilder@dotnet.com
     
-    - name: commit & push
+    - name: commit
       run: |
         git add /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj
         git commit -m "Release v${{ env.PROJECT_VERSION }}"
