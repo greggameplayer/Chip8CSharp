@@ -44,16 +44,16 @@ jobs:
         git config --global user.name "Dotnet autobuilder"
         git config --global user.email autobuilder@dotnet.com
     
-    - name: approve pushing
-      uses: hmarr/auto-approve-action@v2.0.0
-      with:
-        github-token: "${{ secrets.GITHUB_TOKEN }}"
-    
     - name: commit & push
       run: |
         git add /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj
         git commit -m "Release v${{ env.PROJECT_VERSION }}"
-        git push origin master --force
+    
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: true
       
   build:
     runs-on: ubuntu-latest
