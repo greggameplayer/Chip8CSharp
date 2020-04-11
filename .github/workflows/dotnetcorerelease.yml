@@ -21,19 +21,22 @@ jobs:
     - name: Set environmental variable for version
       run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
     
-    - name: Test
-      run: echo "${{ github.event.pull_request.title }}"
+    - name: find current PR
+      uses: jwalton/gh-find-current-pr@v1
+      id: findPr
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Apply Patch
-      if: contains(github.event.pull_request.title, 'patch')
+      if: contains(steps.findPr.outputs.title, 'patch')
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
       
     - name: Apply Minor
-      if: contains(github.event.pull_request.title, 'minor')
+      if: contains(steps.findPr.outputs.title, 'minor')
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
       
     - name: Apply Major
-      if: contains(github.event.pull_request.title, 'major')
+      if: contains(steps.findPr.outputs.title, 'major')
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
     
     - name: git global configuration
