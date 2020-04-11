@@ -1,8 +1,6 @@
 ﻿using SDL2;
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Chip8CSharp
 {
@@ -136,11 +134,6 @@ namespace Chip8CSharp
         public IntPtr getSdlTexture()
         {
             return sdlTexture;
-        }
-
-        public void setSdlTexture(IntPtr sdlTextureSetter)
-        {
-            sdlTexture = sdlTextureSetter;
         }
 
         public void render(IntPtr renderer)
