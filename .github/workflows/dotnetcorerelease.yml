@@ -81,7 +81,9 @@ jobs:
       run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
     
     - name: Install Zip dependencies
-      run: sudo apt update;sudo apt install zip unzip
+      run: |
+        sudo apt update
+        sudo apt install zip unzip
     
     - name: Zip Release
       run: |
