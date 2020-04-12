@@ -7,6 +7,7 @@ on:
 jobs:
   bump-version:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET Core SDK
@@ -30,14 +31,20 @@ jobs:
     - name: Apply Patch
       if: contains(steps.findPr.outputs.title, 'patch')
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj patch
+      continue-on-error: true
       
     - name: Apply Minor
       if: contains(steps.findPr.outputs.title, 'minor')
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj minor
+      continue-on-error: true
       
     - name: Apply Major
       if: contains(steps.findPr.outputs.title, 'major')
       run: dotnet version -f /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj major
+      continue-on-error: true
+    
+    - name: Set environmental variable for new version
+      run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
     
     - name: git global configuration
       run: |
@@ -45,16 +52,21 @@ jobs:
         git config --global user.email autobuilder@dotnet.com
     
     - name: commit
+      continue-on-error: true
       run: |
         git add /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj
         git commit -m "Release v${{ env.PROJECT_VERSION }}"
     
     - name: Push changes
       uses: ad-m/github-push-action@master
+      continue-on-error: true
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        force: true
-      
+        force: true 
+    
+    - name: Validate job
+      run: echo 'valid'
+ 
   build:
     runs-on: ubuntu-latest
     needs: [bump-version]
