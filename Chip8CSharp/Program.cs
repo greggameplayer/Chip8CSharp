@@ -22,6 +22,7 @@ namespace Chip8CSharp
                 }
 
                 Video video = new Video();
+                SDLRendering renderEngine = new SDLRendering();
                 CPU cpu = new CPU(video);
                 video.clearVBuffer();
 
@@ -70,14 +71,15 @@ namespace Chip8CSharp
                     }
                 }
 
-                video.init(0, out IntPtr window);
-                video.getDisplayMode(out SDL.SDL_DisplayMode DM);
+                renderEngine.createWindow(out IntPtr window);
+                video.init(0);
+                renderEngine.getDisplayMode(out SDL.SDL_DisplayMode DM);
 
-                video.verifyWindow(window);
+                renderEngine.verifyWindow(window);
 
                 SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
 
-                video.createRenderer(window, out IntPtr renderer);
+                renderEngine.createRenderer(window, out IntPtr renderer);
 
                 SDL.SDL_Event sdlEvent;
                 bool running = true;
@@ -88,7 +90,7 @@ namespace Chip8CSharp
 
                 audioEngine.play();
 
-                video.createDisplayHandle(out GCHandle displayHandle);
+                renderEngine.createDisplayHandle(video.frameBuffer, out GCHandle displayHandle);
                 Stopwatch frameTimer = Stopwatch.StartNew();
                 int ticksPer60hz = (int)(Stopwatch.Frequency * 0.016);
                 while (running)
@@ -119,11 +121,11 @@ namespace Chip8CSharp
                                     cpu.Keyboard &= (ushort)~(1 << key);
                                 }
                             }
-                            if (video.getSdlTexture() != IntPtr.Zero)
-                                video.destroyTexture();
-                            video.createRGBSurfaceFrom(displayHandle);
-                            video.createTextureFromSurface(renderer);
-                            video.render(renderer);
+                            if (renderEngine.getSdlTexture() != IntPtr.Zero)
+                                renderEngine.destroyTexture();
+                            renderEngine.createRGBSurfaceFrom(displayHandle);
+                            renderEngine.createTextureFromSurface(renderer);
+                            renderEngine.render(renderer);
 
                             frameTimer.Restart();
                         }
@@ -134,7 +136,7 @@ namespace Chip8CSharp
                         Console.WriteLine(e.Message);
                     }
                 }
-                video.destroyAll(window, renderer);
+                renderEngine.destroyAll(window, renderer);
             }
         }
 
