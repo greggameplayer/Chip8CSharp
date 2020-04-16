@@ -49,6 +49,10 @@ jobs:
         echo ::set-env name=NEWVERSION::true
       continue-on-error: true
     
+    - name: set new version to false if needed
+      if: ! contains(steps.findPr.outputs.title, 'major') || ! contains(steps.findPr.outputs.title, 'minor') || ! contains(steps.findPr.outputs.title, 'patch')
+      run: echo ::set-env name=NEWVERSION::false
+    
     - name: Set environmental variable for new version
       run: echo ::set-env name=PROJECT_VERSION::$(dotnet version --project-file /home/runner/work/Chip8CSharp/Chip8CSharp/Chip8CSharp/Chip8CSharp.csproj | grep -v v | tr -d "[:space:]")
     
