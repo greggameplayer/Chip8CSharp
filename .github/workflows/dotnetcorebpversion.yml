@@ -63,7 +63,7 @@ jobs:
       uses: ad-m/github-push-action@master
       continue-on-error: true
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.BOTPAT }}
         force: true 
     
     - name: Validate job
