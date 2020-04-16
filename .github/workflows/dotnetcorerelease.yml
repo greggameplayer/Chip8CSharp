@@ -1,14 +1,12 @@
 name: .NET Core Release
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
-    types: [ closed ]
 
 jobs:
   bump-version:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
     continue-on-error: true
     steps:
     - uses: actions/checkout@v2
