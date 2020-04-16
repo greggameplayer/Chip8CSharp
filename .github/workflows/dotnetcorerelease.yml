@@ -50,7 +50,7 @@ jobs:
       continue-on-error: true
     
     - name: set new version to false if needed
-      if: ! contains(steps.findPr.outputs.title, 'major') || ! contains(steps.findPr.outputs.title, 'minor') || ! contains(steps.findPr.outputs.title, 'patch')
+      if: contains(steps.findPr.outputs.title, 'major') != true && contains(steps.findPr.outputs.title, 'minor') != true && contains(steps.findPr.outputs.title, 'patch') != true
       run: echo ::set-env name=NEWVERSION::false
     
     - name: Set environmental variable for new version
