@@ -8,11 +8,17 @@ namespace Chip8CSharp
     {
         IntPtr sdlSurface, sdlTexture = IntPtr.Zero;
 
-        public void createWindow(out IntPtr window)
+        public void createWindow(out IntPtr window, Config configObj)
         {
-            window =
+            window = (configObj.DisplayState == (int)DisplayState.Windowed) ?
                     SDL.SDL_CreateWindow("Chip8CSharp", 0, 30, 64 * 8, 32 * 8,
-                                         SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
+                                         SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE) : SDL.SDL_CreateWindow("Chip8CSharp", 0, 30, 64 * 8, 32 * 8,
+                                         SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN);
+
+            if (configObj.DisplayState == (int)DisplayState.Windowed)
+                SDL.SDL_ShowCursor(SDL.SDL_ENABLE);
+            else
+                SDL.SDL_ShowCursor(SDL.SDL_DISABLE);
         }
 
         public void getDisplayMode(out SDL.SDL_DisplayMode DM)

@@ -15,6 +15,10 @@ namespace Chip8CSharp
         {
             using (SentrySdk.Init("https://83625c513509439392b08f862b35c090@o373941.ingest.sentry.io/5191206"))
             {
+                ConfigEngine config = new ConfigEngine();
+
+                config.Init(out Config configObj);
+
                 if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) < 0)
                 {
                     Console.WriteLine("SDL failed to init !");
@@ -71,13 +75,17 @@ namespace Chip8CSharp
                     }
                 }
 
-                renderEngine.createWindow(out IntPtr window);
+
+                renderEngine.createWindow(out IntPtr window, configObj);
                 video.init(0);
                 renderEngine.getDisplayMode(out SDL.SDL_DisplayMode DM);
 
                 renderEngine.verifyWindow(window);
 
-                SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
+                if (configObj.DisplayState == (int)DisplayState.Windowed && configObj.DisplayResolution == (int)DisplayResolution.Available)
+                    SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
+                else if (configObj.DisplayState == (int)DisplayState.Fullscreen && configObj.DisplayResolution == (int)DisplayResolution.Available)
+                    SDL.SDL_SetWindowSize(window, DM.w, DM.h);
 
                 renderEngine.createRenderer(window, out IntPtr renderer);
 
