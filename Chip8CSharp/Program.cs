@@ -77,7 +77,7 @@ namespace Chip8CSharp
 
 
                 renderEngine.createWindow(out IntPtr window, configObj);
-                video.init(0);
+                video.init(configObj.QueueOffset);
                 renderEngine.getDisplayMode(out SDL.SDL_DisplayMode DM);
 
                 renderEngine.verifyWindow(window);
@@ -86,6 +86,8 @@ namespace Chip8CSharp
                     SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
                 else if (configObj.DisplayState == (int)DisplayState.Fullscreen && configObj.DisplayResolution == (int)DisplayResolution.Available)
                     SDL.SDL_SetWindowSize(window, DM.w, DM.h);
+                else if (configObj.DisplayResolution != (int)DisplayResolution.Available)
+                    SDL.SDL_SetWindowSize(window, configObj.DisplayWidth, configObj.DisplayHeight);
 
                 renderEngine.createRenderer(window, out IntPtr renderer);
 
