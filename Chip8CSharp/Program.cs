@@ -81,7 +81,6 @@ namespace Chip8CSharp
                 config.setWindowSizeDynamically(configObj, window, DM);
 
                 renderEngine.createRenderer(window, out IntPtr renderer);
-                bool running = true;
 
                 Audio audioEngine = new Audio();
 
@@ -92,9 +91,10 @@ namespace Chip8CSharp
                 renderEngine.createDisplayHandle(video.frameBuffer, out GCHandle displayHandle);
 
                 Keyboard keyboard = new Keyboard();
+                SDLEvents sdlEvents = new SDLEvents();
                 Stopwatch frameTimer = Stopwatch.StartNew();
                 int ticksPer60hz = (int)(Stopwatch.Frequency * 0.016);
-                while (running)
+                while (sdlEvents.running)
                 {
                     try
                     {
@@ -102,7 +102,7 @@ namespace Chip8CSharp
                             cpu.Step();
                         if (frameTimer.ElapsedTicks > ticksPer60hz)
                         {
-                            keyboard.SDLEventLoop(cpu, frameTimer, running);
+                            sdlEvents.EventLoop(cpu, frameTimer, configObj, keyboard);
                             if (renderEngine.getSdlTexture() != IntPtr.Zero)
                                 renderEngine.destroyTexture();
                             renderEngine.createRGBSurfaceFrom(displayHandle);

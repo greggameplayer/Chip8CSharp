@@ -1,6 +1,9 @@
 ﻿using SDL2;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Chip8CSharp
 {
@@ -36,30 +39,47 @@ namespace Chip8CSharp
             return keyIndex;
         }
 
-        public void SDLEventLoop(CPU cpu, Stopwatch frameTimer, bool running)
+        public void KeyDown(SDL.SDL_Event sdlEvent, Config configObj, CPU cpu)
         {
-            SDL.SDL_Event sdlEvent;
-            while (SDL.SDL_PollEvent(out sdlEvent) != 0)
-            {
-                if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
-                {
-                    running = false;
-                }
-                else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
-                {
-                    var key = KeyCodeToKeyIndex((int)sdlEvent.key.keysym.sym);
-                    Console.WriteLine(key);
-                    cpu.Keyboard |= (ushort)(1 << key);
+            var key = TestPressedKey((int)sdlEvent.key.keysym.sym, configObj);
+            cpu.Keyboard |= (ushort)(1 << key);
 
-                    if (cpu.WaitingForKeyPress)
-                        cpu.KeyPressed((byte)key);
-                }
-                else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYUP)
-                {
-                    var key = KeyCodeToKeyIndex((int)sdlEvent.key.keysym.sym);
-                    cpu.Keyboard &= (ushort)~(1 << key);
-                }
-            }
+            if (cpu.WaitingForKeyPress)
+                cpu.KeyPressed((byte)key);
+        }
+
+        public void KeyUp(SDL.SDL_Event sdlEvent, Config configObj, CPU cpu)
+        {
+            var key = TestPressedKey((int)sdlEvent.key.keysym.sym, configObj);
+            cpu.Keyboard &= (ushort)~(1 << key);
+        }
+
+        public int TestPressedKey(int key, Config configObj)
+        {
+            int result = 0;
+            var @switch = new Functions.Switch
+            {
+                { () => key == configObj.zero, () => { result = (int)Keys.zero;} },
+                { () => key == configObj.one, () => { result = (int)Keys.one;} },
+                { () => key == configObj.two, () => { result = (int)Keys.two;} },
+                { () => key == configObj.three, () => { result = (int)Keys.three;} },
+                { () => key == configObj.four, () => { result = (int)Keys.four;} },
+                { () => key == configObj.five, () => { result = (int)Keys.five;} },
+                { () => key == configObj.six, () => { result = (int)Keys.six;} },
+                { () => key == configObj.seven, () => { result = (int)Keys.seven;} },
+                { () => key == configObj.eight, () => { result = (int)Keys.eight;} },
+                { () => key == configObj.nine, () => { result = (int)Keys.nine;} },
+                { () => key == configObj.A, () => { result = (int)Keys.A;} },
+                { () => key == configObj.B, () => { result = (int)Keys.B;} },
+                { () => key == configObj.C, () => { result = (int)Keys.C;} },
+                { () => key == configObj.D, () => { result = (int)Keys.D;} },
+                { () => key == configObj.E, () => { result = (int)Keys.E;} },
+                { () => key == configObj.F, () => { result = (int)Keys.F;} }
+            };
+
+            @switch.Execute();
+
+            return result;
         }
     }
 }

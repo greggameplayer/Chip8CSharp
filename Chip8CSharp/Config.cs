@@ -28,21 +28,22 @@ namespace Chip8CSharp
         public int DisplayResolution = 0;
         public int DisplayWidth = 0;
         public int DisplayHeight = 0;
-        public int one = (int)Keyboard.Keys.one;
-        public int two = (int)Keyboard.Keys.two;
-        public int three = (int)Keyboard.Keys.three;
-        public int four = (int)Keyboard.Keys.four;
-        public int five = (int)Keyboard.Keys.five;
-        public int six = (int)Keyboard.Keys.six;
-        public int seven = (int)Keyboard.Keys.seven;
-        public int eight = (int)Keyboard.Keys.eight;
-        public int nine = (int)Keyboard.Keys.nine;
-        public int A = (int)Keyboard.Keys.A;
-        public int B = (int)Keyboard.Keys.B;
-        public int C = (int)Keyboard.Keys.C;
-        public int D = (int)Keyboard.Keys.D;
-        public int E = (int)Keyboard.Keys.E;
-        public int F = (int)Keyboard.Keys.F;
+        public int one = 49;
+        public int two = 50;
+        public int three = 51;
+        public int four = 52;
+        public int five = 53;
+        public int six = 54;
+        public int seven = 55;
+        public int eight = 56;
+        public int nine = 57;
+        public int zero = 48;
+        public int A = 97;
+        public int B = 98;
+        public int C = 99;
+        public int D = 100;
+        public int E = 101;
+        public int F = 102;
     }
 
     class ConfigEngine
@@ -58,8 +59,8 @@ namespace Chip8CSharp
 
             if (File.Exists(ConfigPath))
             {
-                readConfig(ConfigPath, JsonResult, configObj);
-                if (configObj.ConfigVersion < CURRENT_CONFIG_VERSION || !(IsPropertyExist(configObj, "ConfigVersion")))
+                configObj = readConfig(ConfigPath, JsonResult);
+                if (configObj.ConfigVersion < CURRENT_CONFIG_VERSION)
                 {
                     File.Delete(ConfigPath);
                     configObj = new Config();
@@ -67,7 +68,7 @@ namespace Chip8CSharp
 
                     Console.WriteLine("rewrite default config file !");
                     writeConfig(ConfigPath, JsonResult);
-                    readConfig(ConfigPath, JsonResult, configObj);
+                    configObj = readConfig(ConfigPath, JsonResult);
                 }
             }
             else
@@ -87,21 +88,14 @@ namespace Chip8CSharp
                 SDL.SDL_SetWindowSize(window, configObj.DisplayWidth, configObj.DisplayHeight);
         }
 
-        public static bool IsPropertyExist(dynamic settings, string name)
-        {
-            if (settings is ExpandoObject)
-                return ((IDictionary<string, object>)settings).ContainsKey(name);
-
-            return settings.GetType().GetProperty(name) != null;
-        }
-
-        private void readConfig(string ConfigPath, string JsonResult, Config configObj)
+        private Config readConfig(string ConfigPath, string JsonResult)
         {
             Console.WriteLine("read config file !");
             var tr = new StreamReader(ConfigPath);
             JsonResult = tr.ReadToEnd();
-            configObj = JsonConvert.DeserializeObject<Config>(JsonResult);
             tr.Close();
+
+            return JsonConvert.DeserializeObject<Config>(JsonResult);
         }
 
         private void writeConfig(string ConfigPath, string JsonResult)
