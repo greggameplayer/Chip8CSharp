@@ -21,7 +21,7 @@ namespace Chip8CSharp
 
     class Config
     {
-        public uint QueueOffset = 0;
+        public int QueueOffset = 0;
         public int DisplayState = 0;
         public int DisplayResolution = 0;
         public int DisplayWidth = 0;
