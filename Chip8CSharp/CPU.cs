@@ -207,6 +207,7 @@ namespace Chip8CSharp
                     }
 
                     videoCPU.optimizations(opcode);
+                    videoCPU.postOptimizations();
                     break;
                 case 0xE000:
                     if ((opcode & 0x00FF) == 0x009E)

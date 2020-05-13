@@ -39,8 +39,6 @@ namespace Chip8CSharp
 
                         while (reader.BaseStream.Position < reader.BaseStream.Length)
                         {
-                            // program.Add((ushort)((reader.ReadByte() << 8) |
-                            // reader.ReadByte()));
                             program.Add(reader.ReadByte());
                         }
 
@@ -61,8 +59,6 @@ namespace Chip8CSharp
 
                             while (reader.BaseStream.Position < reader.BaseStream.Length)
                             {
-                                // program.Add((ushort)((reader.ReadByte() << 8) |
-                                // reader.ReadByte()));
                                 program.Add(reader.ReadByte());
                             }
 
@@ -82,17 +78,9 @@ namespace Chip8CSharp
 
                 renderEngine.verifyWindow(window);
 
-                if (configObj.DisplayState == (int)DisplayState.Windowed && configObj.DisplayResolution == (int)DisplayResolution.Available)
-                    SDL.SDL_SetWindowSize(window, DM.w, DM.h - 70);
-                else if (configObj.DisplayState == (int)DisplayState.Fullscreen && configObj.DisplayResolution == (int)DisplayResolution.Available)
-                    SDL.SDL_SetWindowSize(window, DM.w, DM.h);
-                else if (configObj.DisplayResolution != (int)DisplayResolution.Available)
-                    SDL.SDL_SetWindowSize(window, configObj.DisplayWidth, configObj.DisplayHeight);
+                config.setWindowSizeDynamically(configObj, window, DM);
 
                 renderEngine.createRenderer(window, out IntPtr renderer);
-
-                SDL.SDL_Event sdlEvent;
-                bool running = true;
 
                 Audio audioEngine = new Audio();
 
@@ -101,9 +89,12 @@ namespace Chip8CSharp
                 audioEngine.play();
 
                 renderEngine.createDisplayHandle(video.frameBuffer, out GCHandle displayHandle);
+
+                Keyboard keyboard = new Keyboard();
+                SDLEvents sdlEvents = new SDLEvents();
                 Stopwatch frameTimer = Stopwatch.StartNew();
                 int ticksPer60hz = (int)(Stopwatch.Frequency * 0.016);
-                while (running)
+                while (sdlEvents.running)
                 {
                     try
                     {
@@ -111,26 +102,7 @@ namespace Chip8CSharp
                             cpu.Step();
                         if (frameTimer.ElapsedTicks > ticksPer60hz)
                         {
-                            while (SDL.SDL_PollEvent(out sdlEvent) != 0)
-                            {
-                                if (sdlEvent.type == SDL.SDL_EventType.SDL_QUIT)
-                                {
-                                    running = false;
-                                }
-                                else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYDOWN)
-                                {
-                                    var key = KeyCodeToKeyIndex((int)sdlEvent.key.keysym.sym);
-                                    cpu.Keyboard |= (ushort)(1 << key);
-
-                                    if (cpu.WaitingForKeyPress)
-                                        cpu.KeyPressed((byte)key);
-                                }
-                                else if (sdlEvent.type == SDL.SDL_EventType.SDL_KEYUP)
-                                {
-                                    var key = KeyCodeToKeyIndex((int)sdlEvent.key.keysym.sym);
-                                    cpu.Keyboard &= (ushort)~(1 << key);
-                                }
-                            }
+                            sdlEvents.EventLoop(cpu, frameTimer, configObj, keyboard);
                             if (renderEngine.getSdlTexture() != IntPtr.Zero)
                                 renderEngine.destroyTexture();
                             renderEngine.createRGBSurfaceFrom(displayHandle);
@@ -148,17 +120,6 @@ namespace Chip8CSharp
                 }
                 renderEngine.destroyAll(window, renderer);
             }
-        }
-
-        private static int KeyCodeToKeyIndex(int keycode)
-        {
-            int keyIndex = 0;
-            if (keycode < 58)
-                keyIndex = keycode - 48;
-            else
-                keyIndex = keycode - 87;
-
-            return keyIndex;
         }
     }
 }

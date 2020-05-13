@@ -1,17 +1,17 @@
-﻿namespace Chip8CSharp
+namespace Chip8CSharp
 {
     public class Video
     {
         const uint SCREEN_WIDTH = 64;
         const uint SCREEN_HEIGHT = 32;
         const uint QUEUE_SIZE = 0x100;
-        const uint QUEUE_OFFSET = 0;
+        const int QUEUE_OFFSET = 0;
 
         public uint[] videoBuffer = new uint[SCREEN_WIDTH * SCREEN_HEIGHT]; // video buffer
         public uint[] frameBuffer = new uint[SCREEN_WIDTH * SCREEN_HEIGHT]; // used as the real display
 
         uint offset_count = 0;
-        uint offset_limit = QUEUE_OFFSET;
+        int offset_limit = QUEUE_OFFSET;
         bool copyFlag = false;
         ushort[] opcodeQueue = new ushort[QUEUE_SIZE];
         uint queuePointer = 0;
@@ -73,7 +73,17 @@
             enqueue(opcode);
         }
 
-        public void init(uint queue_offset)
+        public void postOptimizations()
+        {
+            if (offset_limit < 0)
+            {
+                emptyqueue();
+                copyToFbuffer();
+                copyFlag = false;
+            }
+        }
+
+        public void init(int queue_offset)
         {
             this.offset_limit = queue_offset;
 
